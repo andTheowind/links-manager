@@ -3,9 +3,13 @@ import { ref } from 'vue'
 import { z } from 'zod'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
+import Toast from 'primevue/toast'
+
+const toast = useToast()
 
 const formData = ref({
   email: '',
@@ -22,11 +26,23 @@ const rules = z.object({
 const resolver = zodResolver(rules)
 
 const submitForm = async ({ valid }) => {
+  if (!valid) {
+    return
+  } else {
+    toast.add({
+      severity: 'success',
+      summary: 'Регистрация',
+      detail: 'Успешная регистрация',
+      life: 3000,
+    })
+  }
+
   console.log(valid)
 }
 </script>
 
 <template>
+  <Toast />
   <Form
     v-slot="$form"
     :initial-values="formData"
