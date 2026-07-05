@@ -1,16 +1,17 @@
 <script setup>
 import { ref } from 'vue'
 import { z } from 'zod'
-import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useToastNotifications } from '@/composables/useToastNotifications.js'
+import { useAuth } from '@/composables/useAuth'
+import { Form } from '@primevue/forms'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Toast from 'primevue/toast'
-import { supabase } from '@/supabase.js'
 
 const { showToast } = useToastNotifications()
+const { signUp, loading, errorMessage } = useAuth()
 
 const formData = ref({
   email: '',
@@ -27,22 +28,16 @@ const rules = z.object({
 const resolver = zodResolver(rules)
 
 const submitForm = async ({ valid }) => {
-  if (!valid) {
-    return
-  } else {
-    const { data, error } = await supabase.auth.signUp({
+  if (!valid) return
+
+  try {
+    await signUp({
       email: formData.value.email,
       password: formData.value.password,
     })
-
-    if (error) {
-      showToast('error', 'Ошибка регистрации', error)
-    } else {
-      showToast('success', 'Регистрация', 'Вы успешно зарегистрировались')
-    }
+  } catch {
+    showToast('error', 'Ошибка регистрации', errorMessage.value)
   }
-
-  console.log(valid)
 }
 </script>
 
@@ -93,7 +88,7 @@ const submitForm = async ({ valid }) => {
       </Message>
     </div>
     <div class="grid grid-cols-2 gap-3">
-      <Button type="submit" class="w-full bg-[#2563EB]" label="Регистрация" />
+      <Button type="submit" class="w-full bg-[#2563EB]" label="Регистрация" :loading="loading" />
       <Button type="submit" icon="pi pi-github" class="w-full" label="Github" severity="contrast" />
     </div>
   </Form>
